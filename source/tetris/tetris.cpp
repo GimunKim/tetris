@@ -8,28 +8,21 @@ using namespace std;
 
 int main(void) {
     Board board;
-    
-    board.spawn_mino(0);
-    board.draw_board();
-    this_thread::sleep_for(chrono::milliseconds(1000));
-    board.move_mino(Action::DROP);
-    board.update_board();
-    board.draw_board();
 
-    this_thread::sleep_for(chrono::milliseconds(1000));
-    board.move_mino(Action::DROP);
-    board.update_board();
-    board.draw_board();
+    int mino_queue[] = {0, 1, 2, 3, 4, 5, 6};
+    int curr_mino = 6;
+    while (curr_mino < 7)
+    {
+        if(!board.has_active_mino()) board.spawn_mino(curr_mino++);
 
-    this_thread::sleep_for(chrono::milliseconds(1000));
-    board.move_mino(Action::DROP);
-    board.update_board();
-    board.draw_board();
+        board.move_mino(Action::ROTATE_CW);
+        board.render();
+        this_thread::sleep_for(chrono::milliseconds(500));
 
-    this_thread::sleep_for(chrono::milliseconds(1000));
-    board.move_mino(Action::DROP);
-    board.update_board();
-    board.draw_board();
+        board.move_mino(Action::DROP);
+        board.render();
+        this_thread::sleep_for(chrono::milliseconds(500));
+    }
 
     return 0;
 }

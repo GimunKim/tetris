@@ -12,12 +12,17 @@ class Board
     mino game_board[22];
     bool is_mino_active;
 
-    public:
-    Board();
-    void move_mino(int cmd);
-    void spawn_mino(int type);
+    void clear_mino_();
     void update_board();
     void draw_board();
+    void draw_mino();
+
+    public:
+    Board();
+    bool has_active_mino();
+    void move_mino(int cmd);
+    void spawn_mino(int type);
+    void render();
 };
 
 #endif
