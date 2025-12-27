@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <utility>
 
 typedef std::uint16_t mino;
 
@@ -11,14 +12,16 @@ extern mino *TETROMINO[7];
 class Tetromino
 {
     private:
-    mino *shape;
+    int mino_type;
     int rotation;
-    int x, y;
+    std::pair<int, int> pos;
 
     public:
-    Tetromino(unsigned int block_type);
+    Tetromino();
+    void set_mino(int type);
     void rotate(int rot);
     void move(int dir);
+    std::pair<int, int> get_pos();
 };
 
 #endif

@@ -1,6 +1,13 @@
-#include "tetromino.hpp"
+#include "tetromino/tetromino.hpp"
 
-Tetromino::Tetromino(unsigned int block_type) : shape(TETROMINO[block_type]), rotation(0), x(0), y(0) {}
+using namespace std;
+
+Tetromino::Tetromino() : mino_type(0), rotation(0), pos(make_pair(0, 0)) {}
+
+void Tetromino::set_mino(int type)
+{
+    mino_type = type;
+}
 
 void Tetromino::rotate(int rot) 
 {
@@ -9,5 +16,10 @@ void Tetromino::rotate(int rot)
 
 void Tetromino::move(int dir) 
 {
+    
+}
 
+pair<int, int> Tetromino::get_pos()
+{
+    return pos;
 }

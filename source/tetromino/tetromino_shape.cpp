@@ -1,4 +1,4 @@
-#include "tetromino.hpp"
+#include "tetromino/tetromino.hpp"
 
 mino I_MINO[4] = {
     0b1111000000000000,
