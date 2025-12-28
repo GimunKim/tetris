@@ -5,9 +5,10 @@ using namespace std;
 
 static uint16_t left_edge = 1u << 12;
 static uint16_t right_edge = 1u << 3;
+static uint16_t full_line =  ((left_edge << 1) - 1) ^ (right_edge - 1);
 
-static int dr[6] = {0, 0, 1, 0, 0};
-static int dc[6] = {-1, 1, 0, 0, 0};
+static int dr[5] = {0, 0, 1, 0, 0};
+static int dc[5] = {-1, 1, 0, 0, 0};
 
 enum Move_result
 {
@@ -53,7 +54,8 @@ int Board::can_move_mino(int new_r, int new_c, int new_rot)
         mino_row = mino_mask & mino_shape;
         mino_row >>= i * 4;
         mino_row <<= (9 - new_c);
-        if ((r >= 22 && mino_row) || game_board[r] & mino_row) return BLOCKED;
+        if ((r >= 22 && mino_row) ) return BLOCKED;
+        if (r < 22 && game_board[r] & mino_row) return BLOCKED;
         if ((mino_row & left_edge << 1) || (mino_row & right_edge >> 1)) return BLOCKED_BY_WALL;
     }
 
@@ -104,7 +106,8 @@ bool Board::spawn_mino(int type)
 {
     active_mino.init_mino(type);
 
-    if (can_move_mino(0, 3, 0)) is_mino_active = true;
+    is_mino_active = (can_move_mino(0, 3, 0) == NON_BLOCKED);
+    return is_mino_active;
 
     return is_mino_active;
 }
@@ -123,6 +126,7 @@ void Board::update_board()
 
     for (int i = 3; i >= 0; --i, mino_mask >>= 4, pos_r++)
     {
+        if (pos_r >= 22) break;
         mino_row = mino_mask & mino_shape;
         mino_row >>= i * 4;
         mino_row <<= (9 - pos_c);
@@ -190,4 +194,30 @@ void Board::render()
 {
     draw_board();
     draw_mino();
+}
+
+/**
+ * @brief 게임 보드를 반환
+ */
+mino const * const Board::get_board() const
+{
+    return game_board;
+}
+
+/**
+ * @brief 특정 행을 지우고, 위쪽 행을 아래쪽으로 1칸씩 땡김
+ */
+void Board::delete_line(int del_row)
+{
+    for (int r = del_row; r >= 1; --r)
+    {
+        game_board[r] = game_board[r - 1];
+    }
+    game_board[0] = 0u;
+}
+
+bool Board::is_line_full(int row)
+{
+    if (row >= 22 || row < 0) return false;
+    return (full_line == game_board[row]);
 }

@@ -10,6 +10,8 @@
                 "source/tetromino/tetromino.cpp",
                 "source/tetromino/tetromino_shape.cpp",
                 "source/board/board.cpp",
+                "source/input/console_input.cpp",
+                "source/game_rule/game_rule.cpp",
                 "-Iinclude",
                 "-std=c++17",
                 "-g",
