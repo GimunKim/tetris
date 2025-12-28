@@ -1,26 +1,28 @@
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "build tetris",
-      "type": "shell",
-      "command": "g++",
-      "args": [
-        "source/tetris/tetris.cpp",
-        "source/tetromino/tetromino.cpp",
-        "source/tetromino/tetromino_shape.cpp",
-        "source/board/board.cpp",
-        "-Iinclude",
-        "-std=c++17",
-        "-g",
-        "-o",
-        "tetris"
-      ],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
-      "problemMatcher": ["$gcc"]
-    }
-  ]
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build tetris",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "source/tetris/tetris.cpp",
+                "source/tetromino/tetromino.cpp",
+                "source/tetromino/tetromino_shape.cpp",
+                "source/board/board.cpp",
+                "-Iinclude",
+                "-std=c++17",
+                "-g",
+                "-o",
+                "tetris"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": [
+                "$gcc"
+            ]
+        }
+    ]
 }

@@ -10,12 +10,17 @@ int main(void) {
     Board board;
 
     int mino_queue[] = {0, 1, 2, 3, 4, 5, 6};
-    int curr_mino = 6;
-    while (curr_mino < 7)
+    int curr_mino = 0;
+    while (1)
     {
-        if(!board.has_active_mino()) board.spawn_mino(curr_mino++);
+        if(!board.has_active_mino()) 
+        {
+            if (curr_mino >= 7) break;
+            if (!board.spawn_mino(curr_mino++)) break;
+        }
 
-        board.move_mino(Action::ROTATE_CW);
+        if (curr_mino % 2) board.move_mino(Action::RIGHT);
+        else board.move_mino(Action::LEFT);
         board.render();
         this_thread::sleep_for(chrono::milliseconds(500));
 

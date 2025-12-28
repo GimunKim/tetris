@@ -3,10 +3,18 @@
 
 using namespace std;
 
-static uint16_t left_edge = 1u << 9;
+static uint16_t left_edge = 1u << 12;
+static uint16_t right_edge = 1u << 3;
 
-static int dr[6] = {0, 0, 1, 0, 0, 0};
-static int dc[6] = {-1, 1, 0, 0, 0, 0};
+static int dr[6] = {0, 0, 1, 0, 0};
+static int dc[6] = {-1, 1, 0, 0, 0};
+
+enum Move_result
+{
+    BLOCKED_BY_WALL,
+    BLOCKED,
+    NON_BLOCKED
+};
 
 Board::Board()
 {
@@ -14,23 +22,7 @@ Board::Board()
 
     for (size_t i = 0; i < 22; ++i)
     {
-        game_board[i] = 0;
-    }
-}
-
-void Board::clear_mino_()
-{
-    auto [pos_r, pos_c] = active_mino.get_pos();
-    uint16_t mino_mask = 0b1111000000000000;
-    uint16_t mino_shape = active_mino.get_shape();
-    uint16_t mino_row;
-
-    for (int i = 3; i >= 0; --i, mino_mask >>= 4, pos_r++)
-    {
-        mino_row = ~(mino_mask & mino_shape);
-        mino_row >>= i * 4;
-        mino_row <<= (6 - pos_c);
-        game_board[pos_r] &= mino_row;
+        game_board[i] = 0u;
     }
 }
 
@@ -44,22 +36,41 @@ bool Board::has_active_mino()
 }
 
 /**
- * @brief 테트로미노 충돌 판정
- * @return 충돌 없는 경우 true 반환
+ * @brief 테트로미노가 새로운 위치와 회전 상태일 때 보드 상에서 충돌이 있는 지 판정
+ * @return 0: 벽에 충돌 / 1: 바닥이나 벽에 충돌 / 2: 충돌 없음
+ */
+int Board::can_move_mino(int new_r, int new_c, int new_rot)
+{
+    int move_result;
+    uint16_t mino_mask = 0b1111000000000000;
+    uint16_t mino_shape;
+    uint16_t mino_row;
+
+    mino_shape = active_mino.get_shape(new_rot);
+
+    for (int i = 3, r = new_r; i >= 0; --i, mino_mask >>= 4, r++)
+    {
+        mino_row = mino_mask & mino_shape;
+        mino_row >>= i * 4;
+        mino_row <<= (9 - new_c);
+        if ((r >= 22 && mino_row) || game_board[r] & mino_row) return BLOCKED;
+        if ((mino_row & left_edge << 1) || (mino_row & right_edge >> 1)) return BLOCKED_BY_WALL;
+    }
+
+    return NON_BLOCKED;
+}
+
+/**
+ * @brief 테트로미노 이동. 벽에 막힌 경우 무시, 바닥이나 다른 블록에 닿은 경우 해당 위치에 고정됨
  */
 void Board::move_mino(int cmd)
 {   
     if (!is_mino_active) return;
 
-    bool can_go = true;
-    int new_r, new_c;
     auto [curr_r, curr_c] = active_mino.get_pos();
     int curr_rot = active_mino.get_rotation();
-    int new_rot;
-
-    uint16_t mino_mask = 0b1111000000000000;
-    uint16_t mino_shape;
-    uint16_t mino_row;
+    int new_r, new_c, new_rot;
+    int move_result;
 
     new_r = curr_r + dr[cmd], new_c = curr_c + dc[cmd];
 
@@ -68,30 +79,16 @@ void Board::move_mino(int cmd)
     else new_rot = curr_rot;
 
     if (new_rot == -1) new_rot = 3;
-    new_rot %= 4;
+    else if (new_rot == 4) new_rot = 0;
 
-    mino_shape = active_mino.get_shape(new_rot);
+    move_result = can_move_mino(new_r, new_c, new_rot);
 
-    if (new_c < 0 || new_c >= 10) return;
-
-    for (int i = 3, r = new_r; i >= 0; --i, mino_mask >>= 4, r++)
-    {
-        mino_row = mino_mask & mino_shape;
-        mino_row >>= i * 4;
-        mino_row <<= (6 - new_c);
-        if ((r >= 22 && mino_row) || game_board[r] & mino_row) 
-        {
-            can_go = false;
-            break;
-        }
-    }
-
-    if (can_go) 
+    if (move_result == NON_BLOCKED) 
     {
         active_mino.set_pos(new_r, new_c);
         active_mino.set_rotation(new_rot);
     }
-    else
+    else if (move_result == BLOCKED)
     {
         update_board();
         is_mino_active = false;
@@ -101,11 +98,15 @@ void Board::move_mino(int cmd)
 /**
  * @brief 새 테트로미노를 스폰
  * @param type 테트로미노의 타입
+ * @return 테트토미노의 스폰 위치에 장애물이 있는 경우 false 반환
  */
-void Board::spawn_mino(int type)
+bool Board::spawn_mino(int type)
 {
     active_mino.init_mino(type);
-    is_mino_active = true;
+
+    if (can_move_mino(0, 3, 0)) is_mino_active = true;
+
+    return is_mino_active;
 }
 
 /**
@@ -124,7 +125,7 @@ void Board::update_board()
     {
         mino_row = mino_mask & mino_shape;
         mino_row >>= i * 4;
-        mino_row <<= (6 - pos_c);
+        mino_row <<= (9 - pos_c);
         game_board[pos_r] |= mino_row;
     }
 }
@@ -141,7 +142,7 @@ void Board::draw_board()
 
     for (int r = 2; r < 22; ++r) 
     {
-        for (uint16_t mask = left_edge; mask > 0u; mask >>= 1)
+        for (uint16_t mask = left_edge; mask >= right_edge; mask >>= 1)
         {
             cout << ((game_board[r] & mask) ? "■" : "□");
         }
@@ -169,9 +170,9 @@ void Board::draw_mino()
             {
                 mino_row = (mino_mask >> (r - pos_r) * 4) & mino_shape;
                 mino_row >>= (3 - (r - pos_r)) * 4;
-                mino_row <<= (6 - pos_c);
+                mino_row <<= (9 - pos_c);
 
-                for (uint16_t mask = left_edge; mask > 0u; mask >>= 1)
+                for (uint16_t mask = left_edge; mask >= right_edge; mask >>= 1)
                 {
                     cout << ((mino_row & mask) ? "■" : "\x1b[C");
                 }

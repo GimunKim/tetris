@@ -10,7 +10,6 @@ enum Action
     DROP,
     ROTATE_CW,
     ROTATE_CCW,
-    HOLD
 };
 
 #endif
