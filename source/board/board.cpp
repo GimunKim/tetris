@@ -3,12 +3,12 @@
 
 using namespace std;
 
-static uint16_t left_edge = 1u << 12;
-static uint16_t right_edge = 1u << 3;
-static uint16_t full_line =  ((left_edge << 1) - 1) ^ (right_edge - 1);
+static const uint16_t left_edge = 1u << 12;
+static const uint16_t right_edge = 1u << 3;
+static const uint16_t full_line =  ((left_edge << 1) - 1) ^ (right_edge - 1);
 
-static int dr[5] = {0, 0, 1, 0, 0};
-static int dc[5] = {-1, 1, 0, 0, 0};
+static const int dr[5] = {0, 0, 1, 0, 0};
+static const int dc[5] = {-1, 1, 0, 0, 0};
 
 enum Move_result
 {

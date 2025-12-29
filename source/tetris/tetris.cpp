@@ -5,6 +5,8 @@
 
 #include <thread>
 #include <chrono>
+#include <algorithm>
+#include <random>
 
 using namespace std;
 
@@ -13,10 +15,13 @@ int main(void) {
     Input input;
     RuleEngine rule;
 
-    int mino_queue[] = {0, 1, 2, 3, 4, 5, 6, 0, 1, 2, 3, 4, 5, 6};
+    vector<int> mino_set = {0, 1, 2, 3, 4, 5, 6};
     int curr_mino = 0;
     int action;
     int score = 0, new_score;
+    auto base_time = chrono::steady_clock::now();
+    auto curr_time = chrono::steady_clock::now();
+    auto diff = curr_time - base_time;
 
     board.render();
     cout << "SCORE: " << score << "\r";
@@ -25,8 +30,21 @@ int main(void) {
     {
         if(!board.has_active_mino()) 
         {
-            if (curr_mino >= 14) break;
-            if (!board.spawn_mino(mino_queue[curr_mino++])) break;
+            if (curr_mino >= 7)
+            {
+                std::shuffle(mino_set.begin(), mino_set.end(), std::mt19937(std::random_device{}()));
+                curr_mino = 0;
+            }
+            if (!board.spawn_mino(mino_set[curr_mino++])) break;
+        }
+
+        curr_time = chrono::steady_clock::now();
+        diff = curr_time - base_time;
+        if (diff >= chrono::milliseconds(500))
+        {
+            base_time = chrono::steady_clock::now();
+            board.move_mino(Action::DROP);
+            board.render();
         }
         
         action = input.console_input();
