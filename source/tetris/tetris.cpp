@@ -51,7 +51,7 @@ int main(void) {
 
         if (action != -1) 
         {
-            if (Action::HARD_DROP) board.drop_mino();
+            if (action == Action::HARD_DROP) while (board.has_active_mino()) board.move_mino(Action::DROP);
             else board.move_mino(action);
             board.render();
         }
